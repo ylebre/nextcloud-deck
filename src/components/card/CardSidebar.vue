@@ -22,6 +22,7 @@
 
 <template>
 	<AppSidebar v-if="currentBoard && currentCard && copiedCard"
+		v-click-outside="closeSidebar"
 		:title="currentCard.title"
 		:subtitle="subtitle"
 		:title-editable.sync="titleEditable"
