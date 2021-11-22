@@ -117,6 +117,7 @@ class DeckProvider implements IProvider {
 				'link' => $this->deckUrl('/board/' . $event->getObjectId()),
 			];
 			$params['board'] = $board;
+			$event->setLink($this->deckUrl('/board/' . $event->getObjectId()));
 		}
 
 		if (isset($subjectParams['card']) && $event->getObjectType() === ActivityManager::DECK_OBJECT_CARD) {
@@ -134,6 +135,7 @@ class DeckProvider implements IProvider {
 				$card['link'] = $this->deckUrl('/board/' . $subjectParams['board']['id'] . '/' . $archivedParam . 'card/' . $event->getObjectId());
 			}
 			$params['card'] = $card;
+			$event->setLink($this->deckUrl('/board/' . $subjectParams['board']['id'] . '/' . $archivedParam . 'card/' . $event->getObjectId()));
 		}
 
 		$params = $this->parseParamForBoard('board', $subjectParams, $params);
