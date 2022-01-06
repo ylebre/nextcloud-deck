@@ -40,6 +40,7 @@ use OCP\AppFramework\Http\Response;
 use OCP\ICache;
 use OCP\ICacheFactory;
 use OCP\IL10N;
+use OCP\IUserManager;
 
 class AttachmentService {
 	private $attachmentMapper;
@@ -58,8 +59,10 @@ class AttachmentService {
 	private $activityManager;
 	/** @var ChangeHelper */
 	private $changeHelper;
+	/** @var IUserManager */
+	private $userManager;
 
-	public function __construct(AttachmentMapper $attachmentMapper, CardMapper $cardMapper, ChangeHelper $changeHelper, PermissionService $permissionService, Application $application, ICacheFactory $cacheFactory, $userId, IL10N $l10n, ActivityManager $activityManager) {
+	public function __construct(AttachmentMapper $attachmentMapper, CardMapper $cardMapper, ChangeHelper $changeHelper, PermissionService $permissionService, Application $application, ICacheFactory $cacheFactory, $userId, IL10N $l10n, ActivityManager $activityManager, IUserManager $userManager) {
 		$this->attachmentMapper = $attachmentMapper;
 		$this->cardMapper = $cardMapper;
 		$this->permissionService = $permissionService;
@@ -69,6 +72,7 @@ class AttachmentService {
 		$this->l10n = $l10n;
 		$this->activityManager = $activityManager;
 		$this->changeHelper = $changeHelper;
+		$this->userManager = $userManager;
 
 		// Register shipped attachment services
 		// TODO: move this to a plugin based approach once we have different types of attachments
@@ -127,6 +131,9 @@ class AttachmentService {
 			try {
 				$service = $this->getService($attachment->getType());
 				$service->extendData($attachment);
+				$user = $this->userManager->get($this->userId);
+				$displayName = $user ? $user->getDisplayName() : '';
+				$attachment->setCreatedBy($displayName);
 			} catch (InvalidAttachmentType $e) {
 				// Ingore invalid attachment types when extending the data
 			}
