@@ -26,6 +26,7 @@ namespace OCA\Deck\AppInfo;
 use Closure;
 use Exception;
 use OC\EventDispatcher\SymfonyAdapter;
+use OCA\Circles\Events\CircleDestroyedEvent;
 use OCA\Deck\Activity\CommentEventHandler;
 use OCA\Deck\Capabilities;
 use OCA\Deck\Collaboration\Resources\ResourceProvider;
@@ -43,6 +44,7 @@ use OCA\Deck\Event\CardCreatedEvent;
 use OCA\Deck\Event\CardDeletedEvent;
 use OCA\Deck\Event\CardUpdatedEvent;
 use OCA\Deck\Listeners\BeforeTemplateRenderedListener;
+use OCA\Deck\Listeners\CircleEventListener;
 use OCA\Deck\Listeners\FullTextSearchEventListener;
 use OCA\Deck\Middleware\DefaultBoardMiddleware;
 use OCA\Deck\Middleware\ExceptionMiddleware;
@@ -60,7 +62,6 @@ use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\Collaboration\Resources\IProviderManager;
 use OCP\Comments\CommentsEntityEvent;
 use OCP\Comments\ICommentsManager;
-use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -84,8 +85,6 @@ class Application extends App implements IBootstrap {
 
 	public function __construct(array $urlParams = []) {
 		parent::__construct(self::APP_ID, $urlParams);
-
-		$this->server = \OC::$server;
 	}
 
 	public function boot(IBootContext $context): void {
@@ -125,7 +124,7 @@ class Application extends App implements IBootstrap {
 		$context->registerDashboardWidget(DeckWidget::class);
 
 		$context->registerEventListener(BeforeTemplateRenderedEvent::class, BeforeTemplateRenderedListener::class);
-		
+
 		// Event listening for full text search indexing
 		$context->registerEventListener(CardCreatedEvent::class, FullTextSearchEventListener::class);
 		$context->registerEventListener(CardUpdatedEvent::class, FullTextSearchEventListener::class);
@@ -133,6 +132,8 @@ class Application extends App implements IBootstrap {
 		$context->registerEventListener(AclCreatedEvent::class, FullTextSearchEventListener::class);
 		$context->registerEventListener(AclUpdatedEvent::class, FullTextSearchEventListener::class);
 		$context->registerEventListener(AclDeletedEvent::class, FullTextSearchEventListener::class);
+
+		$context->registerEventListener(CircleDestroyedEvent::class, CircleEventListener::class);
 	}
 
 	public function registerNotifications(NotificationManager $notificationManager): void {
