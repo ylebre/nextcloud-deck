@@ -34,6 +34,8 @@ use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Db\ChangeHelper;
 use OCA\Deck\Db\LabelMapper;
 use OCA\Deck\Db\StackMapper;
+use OCA\Deck\Event\AclCreatedEvent;
+use OCA\Deck\Event\AclDeletedEvent;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Notification\NotificationHelper;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -335,6 +337,9 @@ class BoardServiceTest extends TestCase {
 			->method('insert')
 			->with($acl)
 			->willReturn($acl);
+		$this->eventDispatcher->expects(self::once())
+			->method('dispatchTyped')
+			->with(new AclCreatedEvent($acl));
 		$this->assertEquals($expected, $this->service->addAcl(
 			123, 'user', 'admin', $providedAcl[0], $providedAcl[1], $providedAcl[2]
 		));
@@ -392,6 +397,9 @@ class BoardServiceTest extends TestCase {
 			->method('delete')
 			->with($acl)
 			->willReturn(true);
+		$this->eventDispatcher->expects(self::once())
+			->method('dispatchTyped')
+			->with(new AclDeletedEvent($acl));
 		$this->assertTrue($this->service->deleteAcl(123));
 	}
 }

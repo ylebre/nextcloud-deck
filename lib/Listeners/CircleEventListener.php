@@ -3,9 +3,12 @@
 namespace OCA\Deck\Listeners;
 
 use OCA\Circles\Events\CircleDestroyedEvent;
+use OCA\Deck\Collaboration\Resources\ResourceProvider;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Event\AclDeletedEvent;
 use OCP\EventDispatcher\Event;
+use OCP\EventDispatcher\IEventDispatcher;
 use OCP\EventDispatcher\IEventListener;
 
 class CircleEventListener implements IEventListener {
@@ -13,8 +16,12 @@ class CircleEventListener implements IEventListener {
 	/** @var AclMapper */
 	private $aclMapper;
 
-	public function __construct(AclMapper $aclMapper) {
+	/** @var IEventDispatcher */
+	private $eventDispatcher;
+
+	public function __construct(AclMapper $aclMapper, IEventDispatcher $eventDispatcher) {
 		$this->aclMapper = $aclMapper;
+		$this->eventDispatcher = $eventDispatcher;
 	}
 
 	public function handle(Event $event): void {
@@ -23,6 +30,7 @@ class CircleEventListener implements IEventListener {
 			$acls = $this->aclMapper->findByParticipant(Acl::PERMISSION_TYPE_CIRCLE, $circleId);
 			foreach ($acls as $acl) {
 				$this->aclMapper->delete($acl);
+				$this->eventDispatcher->dispatchTyped(new AclDeletedEvent($acl));
 			}
 		}
 	}

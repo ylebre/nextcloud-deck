@@ -46,6 +46,7 @@ use OCA\Deck\Event\CardUpdatedEvent;
 use OCA\Deck\Listeners\BeforeTemplateRenderedListener;
 use OCA\Deck\Listeners\CircleEventListener;
 use OCA\Deck\Listeners\FullTextSearchEventListener;
+use OCA\Deck\Listeners\ResourceListener;
 use OCA\Deck\Middleware\DefaultBoardMiddleware;
 use OCA\Deck\Middleware\ExceptionMiddleware;
 use OCA\Deck\Notification\Notifier;
@@ -132,6 +133,10 @@ class Application extends App implements IBootstrap {
 		$context->registerEventListener(AclCreatedEvent::class, FullTextSearchEventListener::class);
 		$context->registerEventListener(AclUpdatedEvent::class, FullTextSearchEventListener::class);
 		$context->registerEventListener(AclDeletedEvent::class, FullTextSearchEventListener::class);
+
+		// Handling cache invalidation for collections
+		$context->registerEventListener(AclCreatedEvent::class, ResourceListener::class);
+		$context->registerEventListener(AclDeletedEvent::class, ResourceListener::class);
 
 		$context->registerEventListener(CircleDestroyedEvent::class, CircleEventListener::class);
 	}

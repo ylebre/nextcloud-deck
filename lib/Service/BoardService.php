@@ -520,13 +520,6 @@ class BoardService {
 		$this->boardMapper->mapAcl($newAcl);
 		$this->changeHelper->boardChanged($boardId);
 
-		// TODO: use the dispatched event for this
-		try {
-			$resourceProvider = \OC::$server->query(\OCA\Deck\Collaboration\Resources\ResourceProvider::class);
-			$resourceProvider->invalidateAccessCache($boardId);
-		} catch (\Exception $e) {
-		}
-
 		$this->eventDispatcher->dispatchTyped(new AclCreatedEvent($acl));
 
 		return $newAcl;
@@ -605,16 +598,7 @@ class BoardService {
 		$this->notificationHelper->sendBoardShared($acl->getBoardId(), $acl, true);
 		$this->changeHelper->boardChanged($acl->getBoardId());
 
-		$version = \OCP\Util::getVersion()[0];
-		if ($version >= 16) {
-			try {
-				$resourceProvider = \OC::$server->query(\OCA\Deck\Collaboration\Resources\ResourceProvider::class);
-				$resourceProvider->invalidateAccessCache($acl->getBoardId());
-			} catch (\Exception $e) {
-			}
-		}
 		$delete = $this->aclMapper->delete($acl);
-
 		$this->eventDispatcher->dispatchTyped(new AclDeletedEvent($acl));
 
 		return $delete;
