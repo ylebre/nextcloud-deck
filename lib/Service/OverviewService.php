@@ -105,8 +105,9 @@ class OverviewService {
 	}
 
 	public function findUpcomingCards(string $userId): array {
-		$userBoards = $this->findAllBoardsFromUser($userId);
-		$foundCards = [];
+		$overview = [];
+
+        $userBoards = $this->findAllBoardsFromUser($userId);
 		foreach ($userBoards as $userBoard) {
 			if (count($userBoard->getAcl()) === 0) {
 				// private board: get cards with due date
@@ -116,15 +117,28 @@ class OverviewService {
 				$cards = $this->cardMapper->findToMeOrNotAssignedCards($userBoard->getId(), $userId);
 			}
 
-			$foundCards[] = array_map(
-				function (Card $card) use ($userBoard, $userId) {
-					$this->enrich($card, $userId);
-					return (new CardDetails($card, $userBoard))->jsonSerialize();
-				},
-				$cards
-			);
+			foreach ($cards as $card) {
+				$this->enrich($card, $userId);
+				$diffDays = $card->getDaysUntilDue();
+
+				$key = 'later';
+				if ($card->getDuedate() === null) {
+					$key = 'nodue';
+				} elseif ($diffDays < 0) {
+					$key = 'overdue';
+				} elseif ($diffDays === 0) {
+					$key = 'today';
+				} elseif ($diffDays === 1) {
+					$key = 'tomorrow';
+				} elseif ($diffDays <= 7) {
+					$key = 'nextSevenDays';
+				}
+
+				$card = (new CardDetails($card, $userBoard));
+				$overview[$key][] = $card->jsonSerialize();
+			}
 		}
-		return array_merge(...$foundCards);
+		return $overview;
 	}
 
 	// FIXME: This is duplicate code with the board service
