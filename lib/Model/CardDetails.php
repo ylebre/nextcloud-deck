@@ -60,17 +60,17 @@ class CardDetails extends Card
 
 	private function getDueStatus(): int {
 		$diffDays = $this->getDaysUntilDue();
+        if ($diffDays === null || $diffDays > 1) {
+            return static::DUEDATE_FUTURE;
+        }
 		if ($diffDays === 1) {
 			return static::DUEDATE_NEXT;
 		}
 		if ($diffDays === 0) {
 			return static::DUEDATE_NOW;
 		}
-		if ($diffDays < 0) {
-			return static::DUEDATE_OVERDUE;
-		}
 
-        return static::DUEDATE_FUTURE;
+        return static::DUEDATE_OVERDUE;
     }
 
 	private function appendBoardDetails(&$array): void {
